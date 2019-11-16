@@ -1,7 +1,7 @@
 language: R
 sudo: false
-cache:                          # optional
-  packages: true                # optional
+cache:                          #optional
+  packages: true                #optional
   directories:
   - $HOME/.npm  # optional
 pandoc_version: 2.3.1

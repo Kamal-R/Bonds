@@ -5,6 +5,8 @@ cache:                          # optional
   directories:
   - $HOME/.npm  # optional
 pandoc_version: 2.3.1
+r_binary_packages:
+  - magick
 
 before_install:
   - nvm install stable

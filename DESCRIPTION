@@ -9,3 +9,5 @@ Imports:
     webshot,
     magick
 Remotes: rstudio/bookdown
+r_binary_packages:
+    - magick

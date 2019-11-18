@@ -18,7 +18,7 @@ Let's say I get wake up to find that \$100 has magically appeared under my pillo
 
 As for how long I leave it in the bank, let's pretend that today is New Year's Day 2019, and see what happens if I leave \$100 in the bank for 1 year or 3 years. A quick-and-easy diagram will help us see what happens. I'll be drawing one every time I have to move money backwards or forwards in time, because I find visualizing the problem makes it so much easier to understand.  
 
-```{r Timevis-Prep, echo - FALSE}
+```{r Timevis-Prep, echo = FALSE}
 style <- "
 .vis-item {
   border: 2px solid #5ace5a;
@@ -158,9 +158,9 @@ draw_diagram(data = data, style = style, ext = "png",
              filename = "PV_1year_A.png")
 ```
 
-This diagram says that \$98.52 today is worth *the same* as \$100 next year, if we earn 1.5% in interest from the bank. There's a special name for \$98.52 - it's the *present value* of \$100 one year from now. We also call it by a much more suggestive name - the *price*. That's because it's how much I have to "pay" the bank today to get \$100 next January. It's very important to understand the time value of money *and* present value, because we're going to be using them to price bonds for the rest of the book. 
+This diagram says that \$98.52 today is worth *the same* as \$100 next year, if we earn 1.5% in interest from the bank. There's a special name for \$98.52 - it's the *present value* of \$100 one year from now. We also call it by a much more suggestive name - the *price*. That's because it's how much I have to "pay" the bank today to get \$100 next January. <!-- It's very important to understand the time value of money *and* present value, because we're going to be using them to price bonds for the rest of the book. -->
 
-Before we get to bonds, let's do a more complicated present value calculation. This one has four \$5000 deposits made every year for the next four years. The game plan is that we're going pull back each \$5000 payment to it's price *today*, and then add those up. It's very important to get all the dollar amounts to the *same day* before adding them up because money at different points in time is *not comparable*. You *must* control for the interest the deposits can make by bringing them to the same point in time. Doing that makes them comparable, so that we safely add them. 
+Before we get to bonds, let's do a more complicated present value calculation. This one has four \$5000 deposits made at the beginning of every year for the next four years. The game plan is that we're going pull back each \$5000 payment to it's price *today*, and then add those up. We have to bring the dollar amounts to the *same day* before adding them up because money at different points in time is *not comparable*. We *must* control for the interest the deposits can earn before we can add them. We're going to do that by bringing all the dollar amounts to January 1, 2019.
 
 <!-- https://github.com/daattali/timevis/issues/45 -->
 <!--

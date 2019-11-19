@@ -1,0 +1,93 @@
+```{r, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(jrvFinance)
+plot_bg <- "#FFFFFF" # "#191919"
+plot_fg <- "#000000" # #929292"
+plot_fg_alt <- "#969696" # ??
+```
+
+# Convexity {#Convexity}
+
+Ok, so now you know how to price bonds. My next big goal is to introduce *convexity* and explain how to think about it. You're going to see what convexity is, why bonds are convex, and how convexity can help you build a good investment portfolio. 
+
+## What is Convexity? 
+
+The mathematical definition of convexity talks about the second derivative of the your investment's payoff function, but the idea is so much simpler than that. All we need is two plots. The first plot shows how the price of a 10 year bond changes as interest rate varies from 0.5% to 4%.  
+
+```{r Bonds-Are-Convex, echo=FALSE, out.width = "80%", fig.align = "center", message = FALSE}
+x_min <- 0.5; x_max = 4
+yield <- seq(from = x_min, to = x_max, by = 0.01)
+price <- 1000 * sapply( yield, function(x) {
+  bond.price(settle = "2019-01-01", mature = "2029-01-01",
+             coupon = 0.02, yield = x) } )
+Price_Yield <- tibble("Yield" = yield, "Price" = price)
+
+ggplot() + 
+  geom_line(data = Price_Yield, aes(yield, price), linetype = "solid") +
+  scale_y_continuous(label = scales::dollar) +
+  labs(title = "Bond Price vs. Interest Rate",
+       x = "Interest Rate",
+       y = "Price") +
+  theme_classic() + 
+  theme(plot.title = element_text(hjust = 0.5, face="bold", 
+                                  margin = margin(10, 0, 10, 0),
+                                  colour = plot_fg),
+        text = element_text(size=16), 
+        panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill = plot_bg, color = plot_bg),
+        plot.background = element_rect(fill = plot_bg, color = plot_bg),
+        axis.line = element_line(colour = plot_bg),
+        axis.title.x = element_text(margin = unit(c(4, 0, 0, 0), "mm"), 
+                                    colour = plot_fg),
+        axis.title.y = element_text(margin = unit(c(0, 4, 0, 0), "mm"), 
+                                    angle = 90, colour = plot_fg) )
+```
+
+The key observation to make is that this curve isn't a straight line. The next plot adds the price of a make-believe asset (which is *not* a bond) which goes up in a straight line. 
+
+```{r Bonds-Are-Convex-2, echo=FALSE, out.width = "80%", fig.align = "center", message = FALSE}
+x_min <- 0.5; x_max = 4
+yield <- seq(from = x_min, to = x_max, by = 0.01)
+price <- 1000 * sapply( yield, function(x) {
+  bond.price(settle = "2019-01-01", mature = "2029-01-01",
+             coupon = 0.02, yield = x) } ) # also: bond.duration
+idx <- 151
+m <- ( price[idx] - price[idx+1] ) / ( yield[idx] - yield[idx+1] )
+b <- ( price[idx] - m*yield[idx] )
+linear = m*yield + b
+
+Price_Yield <- tibble("Yield" = yield, "Price" = price, "Linear" = linear)
+
+ggplot() + 
+  geom_line(data = Price_Yield, aes(yield, price), linetype = "solid") +
+  geom_line(data = Price_Yield, aes(yield, linear), linetype = "solid") +
+  scale_y_continuous(label = scales::dollar) +
+  labs(title = "Bond Price vs. Interest Rate",
+       x = "Interest Rate",
+       y = "Price") +
+  theme_classic() + 
+  theme(plot.title = element_text(hjust = 0.5, face="bold", 
+                                  margin = margin(10, 0, 10, 0),
+                                  colour = plot_fg),
+        text = element_text(size=16), 
+        panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill = plot_bg, color = plot_bg),
+        plot.background = element_rect(fill = plot_bg, color = plot_bg),
+        axis.line = element_line(colour = plot_bg),
+        axis.title.x = element_text(margin = unit(c(4, 0, 0, 0), "mm"), 
+                                    colour = plot_fg, face = "bold"),
+        axis.title.y = element_text(margin = unit(c(0, 4, 0, 0), "mm"), 
+                                    angle = 90, colour = plot_fg, face = "bold") )
+```
+
+The key observation is that the value of the bond (the curved line) is *always* above the value of the straight line. In other words, the price of a bond goes up *faster* than a straight line does, and goes down *slower*. If we unpack that, it means that when the price of your bond starts going up, it goes up faster and faster. We can see this on the plot because the curve keeps getting steeper as yields go lower. And when the price of your bond goes down, it goes down slower and slower. We can also see this on the plot because the curve flattens out as yields go higher. 
+
+That's *convexity*. It gives a natural asymmetry to your bond investment. You lose money slower and slower as the price goes down, but make it faster and faster as the price goes up. I view convexity as a risk management tool because it naturally reduces our losses *and* increases our gains. This is why convexity is so desirable, and we get it for free with bonds. 
+
+
+## Portfolio Construction 

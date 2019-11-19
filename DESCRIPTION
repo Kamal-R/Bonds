@@ -7,5 +7,8 @@ Imports:
     lubridate,
     htmltools,
     webshot,
-    magick
+    magick,
+    tidyverse,
+    ggplot2,
+    jrvFinance
 Remotes: rstudio/bookdown

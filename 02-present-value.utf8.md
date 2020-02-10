@@ -1,11 +1,4 @@
-```{r setup, include = FALSE}
-### Load packages
-library(timevis)
-library(lubridate)
-library(htmltools)
-library(webshot)
-library(magick)
-```
+
 
 # Present Value {#Present-Value}
 
@@ -19,41 +12,12 @@ Let's say I get wake up to find that \$100 has magically appeared under my pillo
 
 As for how long I leave it in the bank, let's pretend that today is New Year's Day 2019, and see what happens if I leave \$100 in the bank for 1 year or 3 years. A quick-and-easy diagram will help us see what happens. I'll be drawing one every time I have to move money backwards or forwards in time, because I find visualizing the problem makes it so much easier to understand.  
 
-```{r Timevis-Prep, echo = FALSE}
-style <- "
-.vis-item {
-  border: 2px solid #5ace5a;
-  font-size: 12pt;
-  background: #FFFFFF;
-  font-family: cursive;
-  padding: 5px;
-}
-"
 
-draw_diagram <- function(data, style, ext, filename) {
-  tv <- timevis(data = data, showZoom = FALSE, 
-              fit = TRUE, zoomFactor = 1,
-              options = list( showCurrentTime = FALSE,
-                              zoomable = FALSE) )
-  tv <- tagList(tags$style(style), tv)
-  tv <- htmltools::html_print(tv, viewer=NULL)
-  tv <- webshot::webshot(url=tv, zoom=2, file=filename)
-  tv <- magick::image_read(filename)
-  tv <- magick::image_trim(tv)
-  magick::image_write(tv, filename, ext)
-  knitr::include_graphics(filename)
-}
-```
 
 ### 1 Year
 
 <!-- https://github.com/daattali/timevis/issues/45 -->
-```{r Shoes-1Year-Q, echo = FALSE}
-data <- data.frame( start = c( ymd(20190101), ymd(20200101) ),
-                    content = c( "$100", "Grows to How Much?" ) )
-draw_diagram(data = data, style = style, ext = "png",
-             filename = "shoes_1year_Q.png")
-```
+<img src="shoes_1year_Q.png" width="960" />
 
 Here's our first diagram. The goal is to fill in the box that has no number. I've put a short question in that box so that we know what we're trying to find. The diagram shows that we deposited \$100 into the bank on January 1, 2019 and asks how much it will be worth on January 1, 2020. We know it gets 1.5% of interest in that first year, so it goes up by 1.5%. Starting off with \$100 and adding 1.5%, we get:
 
@@ -69,12 +33,7 @@ $$\begin{aligned}
                        &= \$101.50
 \end{aligned}$$
 
-```{r Shoes-1year-A, echo = FALSE}
-data <- data.frame( start = c( ymd(20190101), ymd(20200101) ),
-                    content = c( "$100", "$101.50" ) )
-draw_diagram(data = data, style = style, ext = "png",
-             filename = "shoes_1year_A.png")
-```
+<img src="shoes_1year_A.png" width="960" />
 
 You can use either decimals or percent, but either way we have number we're after - \$101.50. I've redrawn the diagram with \$101.50 filled in, so that I know I've got it. 
 
@@ -82,14 +41,7 @@ You can use either decimals or percent, but either way we have number we're afte
 
 If we want to know how much \$100 grows to in 3 years, we get a new diagram. And just so I can put in my back pocket, I'm also going to figure out how much \$100 grows to in 2 years. 
 
-```{r Shoes-3Year-Q, echo = FALSE}
-data <- data.frame( start = c( ymd(20190101), ymd(20200101),
-                               ymd(20210101), ymd(20220101) ),
-                    content = c( "$100", "$101.50",
-                                 "In 2021?", "In 2022?") )
-draw_diagram(data = data, style = style, ext = "png",
-             filename = "shoes_3year_Q.png")
-```
+<img src="shoes_3year_Q.png" width="960" />
 
 Putting it together, I get a diagram with two boxes filled in (2019 and 2020), and two boxes to fill in (2021 and 2022). I have two choices on how to find the number for the *"In 2021?"* box. I can bring the \$101.50 from 2020 forward by 1 year. 
 
@@ -115,14 +67,7 @@ $$\begin{aligned}
 
 I've got the numbers I'm after - \$103.02 and \$104.57. I'll re-draw the diagram with these filled in, so I know I've got what I'm after. 
 
-```{r Shoes-3Year-A, echo = FALSE}
-data <- data.frame( start = c( ymd(20190101), ymd(20200101),
-                               ymd(20210101), ymd(20220101) ),
-                    content = c( "$100", "$101.50",
-                                 "$103.02", "$104.57") )
-draw_diagram(data = data, style = style, ext = "png",
-             filename = "shoes_3year_A.png")
-```
+<img src="shoes_3year_A.png" width="960" />
 
 ### The Big Idea 
 
@@ -139,12 +84,7 @@ That's the big idea behind the **time value of money**: if we know the appropria
 
 You might ask: how much money *today* is the same as \$100 next year? That's just as easy to find. Let's draw our diagram and fill in the missing number. 
 
-```{r PV-1Year-Q, echo = FALSE}
-data <- data.frame( start = c( ymd(20190101), ymd(20200101) ),
-                    content = c( "How Much to Deposit?", "$100.00" ) )
-draw_diagram(data = data, style = style, ext = "png",
-             filename = "PV_1year_Q.png")
-```
+<img src="PV_1year_Q.png" width="960" />
 
 To move money forward in time, we multiplied by the interest rate. To move money backwards in time, we have to divide by the interest rate. We're earning 1.5%, so we have to divide the \$100 we have in January 2020 by 1.015 to find it's value in January 2019. 
 
@@ -152,12 +92,7 @@ $$\begin{aligned}
   \frac{$100}{1.015} &= $98.52
 \end{aligned}$$
 
-```{r PV-1Year-A, echo = FALSE}
-data <- data.frame( start = c( ymd(20190101), ymd(20200101) ),
-                    content = c( "$98.52", "$100.00" ) )
-draw_diagram(data = data, style = style, ext = "png",
-             filename = "PV_1year_A.png")
-```
+<img src="PV_1year_A.png" width="960" />
 
 This diagram says that \$98.52 today is worth *the same* as \$100 next year, if we earn 1.5% in interest from the bank. There's a special name for \$98.52 - it's the *present value* of \$100 one year from now. We also call it by a much more suggestive name - the *price*. That's because it's how much I have to "pay" the bank today to get \$100 next January. <!-- It's very important to understand the time value of money *and* present value, because we're going to be using them to price bonds for the rest of the book. -->
 
@@ -165,13 +100,5 @@ Before we get to bonds, let's do a more complicated present value calculation. T
 
 <!-- https://github.com/daattali/timevis/issues/45 -->
 <!--
-```{r Multiple-Deposits, echo = FALSE}
-# Create data to plot
-data <- data.frame( start = c( ymd(20190201), ymd(20200201), 
-                               ymd(20210201), ymd(20220201),
-                               ymd(20230201) ),
-                    content = c( "$5000", "$5000", "$5000", "$5000", "$5000" ) )
-draw_diagram(data = data, style = style, ext = "png",
-             filename = "multiple-deposits.png")
-```
+<img src="multiple-deposits.png" width="960" />
 -->

@@ -1,7 +1,9 @@
-```{r, include=FALSE}
+```{r setup, include=FALSE}
+### Load packages
 library(tidyverse)
 library(ggplot2)
 library(jrvFinance)
+### Set background and foreground colors
 plot_bg <- "#FFFFFF" # "#191919"
 plot_fg <- "#000000" # #929292"
 plot_fg_alt <- "#969696" # ??
@@ -24,7 +26,8 @@ price <- 1000 * sapply( yield, function(x) {
 Price_Yield <- tibble("Yield" = yield, "Price" = price)
 
 ggplot() + 
-  geom_line(data = Price_Yield, aes(yield, price), linetype = "solid") +
+  geom_line(data = Price_Yield, aes(Yield, Price), linetype = "solid") +
+  scale_y_continuous(label = scales::percent) +
   scale_y_continuous(label = scales::dollar) +
   labs(title = "Bond Price vs. Interest Rate",
        x = "Interest Rate",
@@ -59,15 +62,17 @@ m <- ( price[idx] - price[idx+1] ) / ( yield[idx] - yield[idx+1] )
 b <- ( price[idx] - m*yield[idx] )
 linear = m*yield + b
 
-Price_Yield <- tibble("Yield" = yield, "Price" = price, "Linear" = linear)
+Price_Yield <- tibble("Yield" = yield, 
+                      "Price" = price, 
+                      "Linear" = linear)
 
 ggplot() + 
-  geom_line(data = Price_Yield, aes(yield, price), linetype = "solid") +
-  geom_line(data = Price_Yield, aes(yield, linear), linetype = "solid") +
+  geom_line(data = Price_Yield, aes(Yield, Price), linetype = "solid") +
+  geom_line(data = Price_Yield, aes(Yield, Linear), linetype = "solid") +
+  scale_x_continuous(label = scales::percent) +
   scale_y_continuous(label = scales::dollar) +
-  labs(title = "Bond Price vs. Interest Rate",
-       x = "Interest Rate",
-       y = "Price") +
+  labs(title = "Bond Price vs. Yield",
+       x = "Yield", y = "Price") +
   theme_classic() + 
   theme(plot.title = element_text(hjust = 0.5, face="bold", 
                                   margin = margin(10, 0, 10, 0),
@@ -90,4 +95,98 @@ The key observation is that the value of the bond (the curved line) is *always* 
 That's *convexity*. It gives a natural asymmetry to your bond investment. You lose money slower and slower as the price goes down, but make it faster and faster as the price goes up. I view convexity as a risk management tool because it naturally reduces our losses *and* increases our gains. This is why convexity is so desirable, and we get it for free with bonds. 
 
 
-## Portfolio Construction 
+## Why Are Bonds Convex? 
+
+Bonds are *convex* because of compound interest. The thing to compare it against is *simple interest*. We're going start by finding the price of a bond when we get simple interest, and then compare the price/yield chart under simple interest to the one up above that uses compound interest.
+
+A bank account that pays compound interest gives you interest on the interest you earn. We've seen compound interest at work when we looked at the time value of money. We deposited \$100 at 1.5%, and watched it grow to \$101.50 in one year, \$103.02 in two years, and \$104.57 in three years.
+
+  - In the first year, we made 1.5% on \$100, which is \$1.50. 
+  - In the second year, we made 1.5% on \$101.50, which is \$1.52. 
+  - In the third year, we made 1.5% of \$103.52, which is \$1.55.
+
+Every year, we're making slightly more from the 1.5% because of the interest payments being put into our account. No bank pays simple interest - they all pay compound interest. We're not going to be using it price anything - it's just a tool for us to get some intuition about *why* bonds are convex. 
+
+Under simple interest, the value of our account grows *linearly* over time - it goes up in a straight line. Let's see how our \$100 grows under simple interest. 
+
+  - At the end of the first year, our account is worth \$100 x (1 + 0.015 x 1) = \$101.50. 
+  - At the end of the second year, our account is worth \$100 x (1 + 0.015 x 2) = \$103.00.
+  - At the end of the third year, our account is worth \$100 x (1 + 0.015 x 3) = \$104.50. 
+  
+Another way to think of simple interest is that it pays the same amount every year. We're being paid 1.5% on our original deposit of \$100 every year, which is \$1.50. The next thing we want to do is see how the value of these two accounts are affected by the interest rate. I'm going to plot their value after ten years, and vary the interest rate from 0% to 10%. 
+ 
+```{r Simple-Interest-Growth, echo=FALSE, out.width = "80%", fig.align = "center", message = FALSE}
+x_min <- 0; x_max = 10
+yield <- seq(from = x_min, to = x_max, by = 0.01)
+price_compound <- sapply( yield, function(x) { 100 * (1 + x/100)^10 } ) 
+price_linear <- sapply( yield, function(x) { 100 * (1 + 10*x/100) } )
+
+Price_Yield <- tibble( "Yield" = yield/100, 
+                       "Compound" = price_compound, 
+                       "Linear" = price_linear )
+
+ggplot() + 
+  geom_line(data = Price_Yield, aes(Yield, Compound, color = plot_fg), 
+            linetype = "solid") +
+  geom_line(data = Price_Yield, aes(Yield, Linear, color = plot_fg_alt), 
+            linetype = "solid") +
+  scale_x_continuous(label = scales::percent) + 
+  scale_y_continuous(label = scales::dollar) +
+  labs(title = "Simple Interest vs. Compound Interest",
+       x = "Interest Rate",
+       y = "Price") +
+  theme_classic() + 
+  theme(plot.title = element_text(hjust = 0.5, face="bold", 
+                                  margin = margin(10, 0, 10, 0),
+                                  colour = plot_fg),
+        text = element_text(size=16), 
+        panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill = plot_bg, color = plot_bg),
+        plot.background = element_rect(fill = plot_bg, color = plot_bg),
+        axis.line = element_line(colour = plot_bg),
+        axis.title.x = element_text(margin = unit(c(4, 0, 0, 0), "mm"), 
+                                    colour = plot_fg, face = "bold"),
+        axis.title.y = element_text(margin = unit(c(0, 4, 0, 0), "mm"), 
+                                    angle = 90, colour = plot_fg, face = "bold") )
+```
+
+The account earning simple interest is a straight line, while the account earning compound interest is curved. We've got one more plot to go - this one shows the present value (or *price*) of \$100 in each account 10 years in the future, under compound interest and simple interest. As before, the interest rate varies from 0% to 10%.
+
+```{r Simple-Interest-Price, echo=FALSE, out.width = "80%", fig.align = "center", message = FALSE}
+x_min <- 0; x_max = 10
+yield <- seq(from = x_min, to = x_max, by = 0.01)
+price_compound <- sapply( yield, function(x) { 100 * (1 + x/100)^-10 } ) 
+price_linear <- sapply( yield, function(x) { 100 / (1 + 10*x/100) } )
+
+Price_Yield <- tibble( "Yield" = yield/100, 
+                       "Compound" = price_compound, 
+                       "Linear" = price_linear )
+
+ggplot() + 
+  geom_line(data = Price_Yield, aes(Yield, Compound, color = plot_fg), 
+            linetype = "solid") +
+  geom_line(data = Price_Yield, aes(Yield, Linear, color = plot_fg_alt), 
+            linetype = "solid") +
+  scale_x_continuous(label = scales::percent) + 
+  scale_y_continuous(label = scales::dollar) +
+  labs(title = "Simple Interest vs. Compound Interest",
+       x = "Interest Rate",
+       y = "Price") +
+  theme_classic() + 
+  theme(plot.title = element_text(hjust = 0.5, face="bold", 
+                                  margin = margin(10, 0, 10, 0),
+                                  colour = plot_fg),
+        text = element_text(size=16), 
+        panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill = plot_bg, color = plot_bg),
+        plot.background = element_rect(fill = plot_bg, color = plot_bg),
+        axis.line = element_line(colour = plot_bg),
+        axis.title.x = element_text(margin = unit(c(4, 0, 0, 0), "mm"), 
+                                    colour = plot_fg, face = "bold"),
+        axis.title.y = element_text(margin = unit(c(0, 4, 0, 0), "mm"), 
+                                    angle = 90, colour = plot_fg, face = "bold") )
+```

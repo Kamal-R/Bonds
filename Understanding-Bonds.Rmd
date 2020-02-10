@@ -1,0 +1,437 @@
+--- 
+title: "Understanding Bonds"
+subtitle: "" 
+author: "Kamal Rai"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: book
+bibliography: [book.bib, packages.bib]
+biblio-style: apalike
+link-citations: yes
+description: ""
+---
+
+# Introduction {-}
+
+## Preface {-}
+
+Bonds are massively underappreciated by the people I know as an investment option. Maybe it's because bonds never get in the headlines like tech stocks or the S&P 500 do, or because they think bonds are "boring". I haven't been able to figure out why, but I'd like to bring excitement back to bonds. To me, their risk-reward characteristics make them the more important part of anyone's investment portfolio. 
+
+The biggest problem with money is that it causes too much stress. I think the biggest reason for this is that people don't know how to set and pursue financial goals. One part of that is budgeting and saving money. But I'd bet you're very good at understanding how much money you're making and how much you can spend. You may want to spend more (really badly!), but you know what you can afford to buy. And if you buy something that's too expensive or a "waste of money", you'll probably realize it soon enough. So while you might have trouble meeting savings goals, you probably understand the ideas behind them almost intutitively. 
+
+It makes sense, too, because making money and spending it is part of your everyday life. What you don't have as much experience with or intuition about is investing. You don't go around staring at stocks and bonds like you do jeans or computers, trying to figure out which one you should buy. Investors on Wall Street might, but the rest of us have better things to do.
+
+You'll have heard some advice along the way - start saving when you're young, invest in stocks for the long run, buy some bonds if you're a conservative investor - and it might work for you. But it's one-size-fits-all advice, and that limits how well it fits your goals and your tolerance for stress from your investments. It puts your savings at the mercy of a cookie-cutter plan, and you can do better than that. 
+
+If you understand bonds, you can use them to build an investment portfolio that suits you. You have to have set goals first, because your portfolio should be designed to help you reach them. But once you have goals and have constructed a portfolio to pursue them, maintaining it doesn't have to take much time. If you want, you can build portfolios that are reasonably recession-proof and generally only needs to be reviewed monthly or quarterly. 
+
+If you want to take more control of you financial future, this book might be for you. I'm focusing on bonds because the ideas behind thoughtfully investing in bonds are fundamentally important. You'll be able to use them to  and bonds themselves have lots of attractive properties. The  
+
+## Acknowledgments {-}
+
+This book is written in Rmarkdown using the *bookdown* package, hosted on Netlify, and built using Travis CI. The *Authoring Books and Technical Documents with R Markdown* at https://musing-aryabhata-b16338.netlify.com/ was very helpful in setting up Netlify and Travis CI. 
+
+```{r, results='asis', echo = FALSE, eval = TRUE} 
+# if(knitr:::pandoc_to() == "html") { 
+#   cat('## Sign Up For Updates {-} \n Click below to sign up to receive notifications every time new chapters # are published \n.') }
+# if(knitr:::pandoc_to() == "html") { 
+#   cat('<script async data-uid="244f107410"src="https://hustling-trailblazer-1491.ck.page/244f107410/index.js"># </script>') }
+```
+
+```{r include=FALSE}
+# automatically create a bib database for R packages
+knitr::write_bib(c(
+  .packages(), 'bookdown', 'knitr', 'rmarkdown'
+), 'packages.bib')
+```
+
+<!--chapter:end:index.Rmd-->
+
+# Introduction {#Intro}
+
+This book has five chapters. The first two chapters introduce us to bonds. Chapter 1 introduces present value, the most important concept in finance. You *must* understand present value to be able to price bonds. Luckily, the math is very simple and I'll link to online calculators online that make it even easier to do. Chapter 2 is on pricing bonds, which is just finding the present value of the bond. I'll also introduce some terms and ideas in this chapter that I'll use for the rest of the book. 
+
+The next two chapters dive deeper into bonds. Chapter 3 takes up convexity, which will smell mathematical but is actually a very simple idea that is obscured by math. Convexity is extremely desirable, and bonds naturally have convexity. It's one of the reasons I believe they are an essential component of a well-constructed investment portfolio. The Chapter 4 looks at duration, which will be our main tool to determine how risky a bond is. The idea is that by controlling our exposure to duration, we can control how risky our bond position is. 
+
+In the last two chapters, we're going to talk about portfolio construction. Chapter 5 takes a deep dive into the the yield curve. You might have heard it in the news - an "inverted yield curve" can indicate an oncoming recession. But the yield curve contains so much more information than just being an occasional recession indicator, and being able to "read" the information in the yield curve will help you construct an investment portfolio that's more suited to your needs. Chapter 6 presents two ficticious people, and their financial goals. We'll use what we've learned in the previous chapters to construct stock/bond portfolios, and compare how well these portfolios meet their goals to a typical portfolio that an investment advisor at a bank may put them in. 
+
+
+<!--chapter:end:01-intro.Rmd-->
+
+```{r setup, include = FALSE}
+### Load packages
+library(timevis)
+library(lubridate)
+library(htmltools)
+library(webshot)
+library(magick)
+```
+
+# Present Value {#Present-Value}
+
+Having \$100 today isn't the same as having \$100 next year. I want to buy new shoes, and I don't want to wait a year. I don't waiting any fun, and I don't think I'm alone in that. Buying my shoes has a cost, though. Not only am I out of \$100 today. I'll be out even more money later, because I won't be able to throw it the bank. It'll earn interest in a savings account, and I'll make a couple dollars a year just off the interest. 
+
+This is the most important idea in all of finance: Having \$100 today isn't the same as having \$100 some other day. It's called the **time value of money**, and it exists because money saved up in bank account earns interest. We're going to spend the next few minutes figuring out what that actually means. 
+
+## The Time Value of Money
+
+Let's say I get wake up to find that \$100 has magically appeared under my pillow. I can buy those shoes I'm after, or I can put it in the bank. How much money am I "losing" if I buy them? That depends on two things - the *interest rate* my bank account earns, and *how long* I leave the money in the bank. We need to know two things - my *interest rate*, and how long I leave the \$100 in the bank. There's an entire chapter on how to choose what interest rate to use, but for now I'm going to assume I can get 1.5% per year from a savings account. 
+
+As for how long I leave it in the bank, let's pretend that today is New Year's Day 2019, and see what happens if I leave \$100 in the bank for 1 year or 3 years. A quick-and-easy diagram will help us see what happens. I'll be drawing one every time I have to move money backwards or forwards in time, because I find visualizing the problem makes it so much easier to understand.  
+
+```{r Timevis-Prep, echo = FALSE}
+style <- "
+.vis-item {
+  border: 2px solid #5ace5a;
+  font-size: 12pt;
+  background: #FFFFFF;
+  font-family: cursive;
+  padding: 5px;
+}
+"
+
+draw_diagram <- function(data, style, ext, filename) {
+  tv <- timevis(data = data, showZoom = FALSE, 
+              fit = TRUE, zoomFactor = 1,
+              options = list( showCurrentTime = FALSE,
+                              zoomable = FALSE) )
+  tv <- tagList(tags$style(style), tv)
+  tv <- htmltools::html_print(tv, viewer=NULL)
+  tv <- webshot::webshot(url=tv, zoom=2, file=filename)
+  tv <- magick::image_read(filename)
+  tv <- magick::image_trim(tv)
+  magick::image_write(tv, filename, ext)
+  knitr::include_graphics(filename)
+}
+```
+
+### 1 Year
+
+<!-- https://github.com/daattali/timevis/issues/45 -->
+```{r Shoes-1Year-Q, echo = FALSE}
+data <- data.frame( start = c( ymd(20190101), ymd(20200101) ),
+                    content = c( "$100", "Grows to How Much?" ) )
+draw_diagram(data = data, style = style, ext = "png",
+             filename = "shoes_1year_Q.png")
+```
+
+Here's our first diagram. The goal is to fill in the box that has no number. I've put a short question in that box so that we know what we're trying to find. The diagram shows that we deposited \$100 into the bank on January 1, 2019 and asks how much it will be worth on January 1, 2020. We know it gets 1.5% of interest in that first year, so it goes up by 1.5%. Starting off with \$100 and adding 1.5%, we get:
+
+$$\begin{aligned}
+  $100 + \$100 * 1.5\% &= \$100 * 101.5\% \\
+                       &= \$101.50
+\end{aligned}$$
+
+I like using decimals instead of percent. If we do that, we get: 
+
+$$\begin{aligned}
+  $100 + \$100 * 0.015 &= \$100 * 1.015 \\
+                       &= \$101.50
+\end{aligned}$$
+
+```{r Shoes-1year-A, echo = FALSE}
+data <- data.frame( start = c( ymd(20190101), ymd(20200101) ),
+                    content = c( "$100", "$101.50" ) )
+draw_diagram(data = data, style = style, ext = "png",
+             filename = "shoes_1year_A.png")
+```
+
+You can use either decimals or percent, but either way we have number we're after - \$101.50. I've redrawn the diagram with \$101.50 filled in, so that I know I've got it. 
+
+### 3 Years
+
+If we want to know how much \$100 grows to in 3 years, we get a new diagram. And just so I can put in my back pocket, I'm also going to figure out how much \$100 grows to in 2 years. 
+
+```{r Shoes-3Year-Q, echo = FALSE}
+data <- data.frame( start = c( ymd(20190101), ymd(20200101),
+                               ymd(20210101), ymd(20220101) ),
+                    content = c( "$100", "$101.50",
+                                 "In 2021?", "In 2022?") )
+draw_diagram(data = data, style = style, ext = "png",
+             filename = "shoes_3year_Q.png")
+```
+
+Putting it together, I get a diagram with two boxes filled in (2019 and 2020), and two boxes to fill in (2021 and 2022). I have two choices on how to find the number for the *"In 2021?"* box. I can bring the \$101.50 from 2020 forward by 1 year. 
+
+$$\begin{aligned}
+  $101.50 * 1.015 &= $103.02
+\end{aligned}$$
+
+Or, I can bring the \$100 from 2019 forward by 2 years. Since I'll be getting 2 years of interest, I have to multiply my \$100 by 1.015 *twice* to do that. 
+
+$$\begin{aligned}
+  $100 * 1.015 * 1.015 &= $100 * 1.015^2 \\
+                       &= $100 * 1.03023 \\
+                       &= $103.02
+\end{aligned}$$
+
+I get the same number either way - \$103.02 - but the second way is faster. To find out how much it would be worth *"In 2022?"*, I'll bring the \$100 forward by 3 years. 
+
+$$\begin{aligned}
+  $100 * 1.015^3 &= $100 * 1.015^3 \\
+                 &= $100 * 1.04568 \\
+                 &= $104.57
+\end{aligned}$$
+
+I've got the numbers I'm after - \$103.02 and \$104.57. I'll re-draw the diagram with these filled in, so I know I've got what I'm after. 
+
+```{r Shoes-3Year-A, echo = FALSE}
+data <- data.frame( start = c( ymd(20190101), ymd(20200101),
+                               ymd(20210101), ymd(20220101) ),
+                    content = c( "$100", "$101.50",
+                                 "$103.02", "$104.57") )
+draw_diagram(data = data, style = style, ext = "png",
+             filename = "shoes_3year_A.png")
+```
+
+### The Big Idea 
+
+Here's the big idea: if the interest rate really is 1.5%, then \$100 in 2019 is the worth *the same* as \$101.50 in 2020, \$103.02 in 2021, and \$104.57 in 2022. I can save \$100 in 2019 and have that much in 2020, 2021, or 2022 if I get 1.5% in interest every year. They're literally worth *the same*. 
+
+That might sound impossible, but let's go back to me trying to decide between getting \$100 today or next year. At 1.5%, we've seen that \$100 today grows to \$101.50 in a year. If I take \$100 next year, I'll just have \$100. If I want to get the same amount of money next year, I *have to* get \$101.50 next year to match what would be in my bank account. If I just get \$100 next year, I've lost the \$1.50 I would earned in interest. 
+
+The same argument goes for any of the dollar amounts on the diagram, and even inflation doesn't change the picture. I just have to use the *real* interest rate (instead of the *nominal* interest rate, like I've done here), and I'll still be able move money backwards and forwards in time so that all the account values are worth *the same*. 
+
+That's the big idea behind the **time value of money**: if we know the appropriate interest rates to use, we can know how much money is worth at any point in time (in the past *or* in the future).
+
+
+## Finding Present Value 
+
+You might ask: how much money *today* is the same as \$100 next year? That's just as easy to find. Let's draw our diagram and fill in the missing number. 
+
+```{r PV-1Year-Q, echo = FALSE}
+data <- data.frame( start = c( ymd(20190101), ymd(20200101) ),
+                    content = c( "How Much to Deposit?", "$100.00" ) )
+draw_diagram(data = data, style = style, ext = "png",
+             filename = "PV_1year_Q.png")
+```
+
+To move money forward in time, we multiplied by the interest rate. To move money backwards in time, we have to divide by the interest rate. We're earning 1.5%, so we have to divide the \$100 we have in January 2020 by 1.015 to find it's value in January 2019. 
+
+$$\begin{aligned}
+  \frac{$100}{1.015} &= $98.52
+\end{aligned}$$
+
+```{r PV-1Year-A, echo = FALSE}
+data <- data.frame( start = c( ymd(20190101), ymd(20200101) ),
+                    content = c( "$98.52", "$100.00" ) )
+draw_diagram(data = data, style = style, ext = "png",
+             filename = "PV_1year_A.png")
+```
+
+This diagram says that \$98.52 today is worth *the same* as \$100 next year, if we earn 1.5% in interest from the bank. There's a special name for \$98.52 - it's the *present value* of \$100 one year from now. We also call it by a much more suggestive name - the *price*. That's because it's how much I have to "pay" the bank today to get \$100 next January. <!-- It's very important to understand the time value of money *and* present value, because we're going to be using them to price bonds for the rest of the book. -->
+
+Before we get to bonds, let's do a more complicated present value calculation. This one has four \$5000 deposits made at the beginning of every year for the next four years. The game plan is that we're going pull back each \$5000 payment to it's price *today*, and then add those up. We have to bring the dollar amounts to the *same day* before adding them up because money at different points in time is *not comparable*. We *must* control for the interest the deposits can earn before we can add them. We're going to do that by bringing all the dollar amounts to January 1, 2019.
+
+<!-- https://github.com/daattali/timevis/issues/45 -->
+<!--
+```{r Multiple-Deposits, echo = FALSE}
+# Create data to plot
+data <- data.frame( start = c( ymd(20190201), ymd(20200201), 
+                               ymd(20210201), ymd(20220201),
+                               ymd(20230201) ),
+                    content = c( "$5000", "$5000", "$5000", "$5000", "$5000" ) )
+draw_diagram(data = data, style = style, ext = "png",
+             filename = "multiple-deposits.png")
+```
+-->
+
+<!--chapter:end:02-present-value.Rmd-->
+
+```{r setup, include=FALSE}
+### Load packages
+library(tidyverse)
+library(ggplot2)
+library(jrvFinance)
+### Set background and foreground colors
+plot_bg <- "#FFFFFF" # "#191919"
+plot_fg <- "#000000" # #929292"
+plot_fg_alt <- "#969696" # ??
+```
+
+# Convexity {#Convexity}
+
+Ok, so now you know how to price bonds. My next big goal is to introduce *convexity* and explain how to think about it. You're going to see what convexity is, why bonds are convex, and how convexity can help you build a good investment portfolio. 
+
+## What is Convexity? 
+
+The mathematical definition of convexity talks about the second derivative of the your investment's payoff function, but the idea is so much simpler than that. All we need is two plots. The first plot shows how the price of a 10 year bond changes as interest rate varies from 0.5% to 4%.  
+
+```{r Bonds-Are-Convex, echo=FALSE, out.width = "80%", fig.align = "center", message = FALSE}
+x_min <- 0.5; x_max = 4
+yield <- seq(from = x_min, to = x_max, by = 0.01)
+price <- 1000 * sapply( yield, function(x) {
+  bond.price(settle = "2019-01-01", mature = "2029-01-01",
+             coupon = 0.02, yield = x) } )
+Price_Yield <- tibble("Yield" = yield, "Price" = price)
+
+ggplot() + 
+  geom_line(data = Price_Yield, aes(Yield, Price), linetype = "solid") +
+  scale_y_continuous(label = scales::percent) +
+  scale_y_continuous(label = scales::dollar) +
+  labs(title = "Bond Price vs. Interest Rate",
+       x = "Interest Rate",
+       y = "Price") +
+  theme_classic() + 
+  theme(plot.title = element_text(hjust = 0.5, face="bold", 
+                                  margin = margin(10, 0, 10, 0),
+                                  colour = plot_fg),
+        text = element_text(size=16), 
+        panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill = plot_bg, color = plot_bg),
+        plot.background = element_rect(fill = plot_bg, color = plot_bg),
+        axis.line = element_line(colour = plot_bg),
+        axis.title.x = element_text(margin = unit(c(4, 0, 0, 0), "mm"), 
+                                    colour = plot_fg),
+        axis.title.y = element_text(margin = unit(c(0, 4, 0, 0), "mm"), 
+                                    angle = 90, colour = plot_fg) )
+```
+
+The key observation to make is that this curve isn't a straight line. The next plot adds the price of a make-believe asset (which is *not* a bond) which goes up in a straight line. 
+
+```{r Bonds-Are-Convex-2, echo=FALSE, out.width = "80%", fig.align = "center", message = FALSE}
+x_min <- 0.5; x_max = 4
+yield <- seq(from = x_min, to = x_max, by = 0.01)
+price <- 1000 * sapply( yield, function(x) {
+  bond.price(settle = "2019-01-01", mature = "2029-01-01",
+             coupon = 0.02, yield = x) } ) # also: bond.duration
+idx <- 151
+m <- ( price[idx] - price[idx+1] ) / ( yield[idx] - yield[idx+1] )
+b <- ( price[idx] - m*yield[idx] )
+linear = m*yield + b
+
+Price_Yield <- tibble("Yield" = yield, 
+                      "Price" = price, 
+                      "Linear" = linear)
+
+ggplot() + 
+  geom_line(data = Price_Yield, aes(Yield, Price), linetype = "solid") +
+  geom_line(data = Price_Yield, aes(Yield, Linear), linetype = "solid") +
+  scale_x_continuous(label = scales::percent) +
+  scale_y_continuous(label = scales::dollar) +
+  labs(title = "Bond Price vs. Yield",
+       x = "Yield", y = "Price") +
+  theme_classic() + 
+  theme(plot.title = element_text(hjust = 0.5, face="bold", 
+                                  margin = margin(10, 0, 10, 0),
+                                  colour = plot_fg),
+        text = element_text(size=16), 
+        panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill = plot_bg, color = plot_bg),
+        plot.background = element_rect(fill = plot_bg, color = plot_bg),
+        axis.line = element_line(colour = plot_bg),
+        axis.title.x = element_text(margin = unit(c(4, 0, 0, 0), "mm"), 
+                                    colour = plot_fg, face = "bold"),
+        axis.title.y = element_text(margin = unit(c(0, 4, 0, 0), "mm"), 
+                                    angle = 90, colour = plot_fg, face = "bold") )
+```
+
+The key observation is that the value of the bond (the curved line) is *always* above the value of the straight line. In other words, the price of a bond goes up *faster* than a straight line does, and goes down *slower*. If we unpack that, it means that when the price of your bond starts going up, it goes up faster and faster. We can see this on the plot because the curve keeps getting steeper as yields go lower. And when the price of your bond goes down, it goes down slower and slower. We can also see this on the plot because the curve flattens out as yields go higher. 
+
+That's *convexity*. It gives a natural asymmetry to your bond investment. You lose money slower and slower as the price goes down, but make it faster and faster as the price goes up. I view convexity as a risk management tool because it naturally reduces our losses *and* increases our gains. This is why convexity is so desirable, and we get it for free with bonds. 
+
+
+## Why Are Bonds Convex? 
+
+Bonds are *convex* because of compound interest. The thing to compare it against is *simple interest*. We're going start by finding the price of a bond when we get simple interest, and then compare the price/yield chart under simple interest to the one up above that uses compound interest.
+
+A bank account that pays compound interest gives you interest on the interest you earn. We've seen compound interest at work when we looked at the time value of money. We deposited \$100 at 1.5%, and watched it grow to \$101.50 in one year, \$103.02 in two years, and \$104.57 in three years.
+
+  - In the first year, we made 1.5% on \$100, which is \$1.50. 
+  - In the second year, we made 1.5% on \$101.50, which is \$1.52. 
+  - In the third year, we made 1.5% of \$103.52, which is \$1.55.
+
+Every year, we're making slightly more from the 1.5% because of the interest payments being put into our account. No bank pays simple interest - they all pay compound interest. We're not going to be using it price anything - it's just a tool for us to get some intuition about *why* bonds are convex. 
+
+Under simple interest, the value of our account grows *linearly* over time - it goes up in a straight line. Let's see how our \$100 grows under simple interest. 
+
+  - At the end of the first year, our account is worth \$100 x (1 + 0.015 x 1) = \$101.50. 
+  - At the end of the second year, our account is worth \$100 x (1 + 0.015 x 2) = \$103.00.
+  - At the end of the third year, our account is worth \$100 x (1 + 0.015 x 3) = \$104.50. 
+  
+Another way to think of simple interest is that it pays the same amount every year. We're being paid 1.5% on our original deposit of \$100 every year, which is \$1.50. The next thing we want to do is see how the value of these two accounts are affected by the interest rate. I'm going to plot their value after ten years, and vary the interest rate from 0% to 10%. 
+ 
+```{r Simple-Interest, echo=FALSE, out.width = "80%", fig.align = "center", message = FALSE}
+x_min <- 0; x_max = 10
+yield <- seq(from = x_min, to = x_max, by = 0.01)
+price_compound <- sapply( yield, function(x) { 100 * (1 + x/100)^10 } ) 
+price_linear <- sapply( yield, function(x) { 100 * (1 + 10*x/100) } )
+
+Price_Yield <- tibble( "Yield" = yield/100, 
+                       "Compound" = price_compound, 
+                       "Linear" = price_linear )
+
+ggplot() + 
+  geom_line(data = Price_Yield, aes(Yield, Compound, color = plot_fg), 
+            linetype = "solid") +
+  geom_line(data = Price_Yield, aes(Yield, Linear, color = plot_fg_alt), 
+            linetype = "solid") +
+  scale_x_continuous(label = scales::percent) + 
+  scale_y_continuous(label = scales::dollar) +
+  labs(title = "Simple Interest vs. Compound Interest",
+       x = "Interest Rate",
+       y = "Price") +
+  theme_classic() + 
+  theme(plot.title = element_text(hjust = 0.5, face="bold", 
+                                  margin = margin(10, 0, 10, 0),
+                                  colour = plot_fg),
+        text = element_text(size=16), 
+        panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill = plot_bg, color = plot_bg),
+        plot.background = element_rect(fill = plot_bg, color = plot_bg),
+        axis.line = element_line(colour = plot_bg),
+        axis.title.x = element_text(margin = unit(c(4, 0, 0, 0), "mm"), 
+                                    colour = plot_fg, face = "bold"),
+        axis.title.y = element_text(margin = unit(c(0, 4, 0, 0), "mm"), 
+                                    angle = 90, colour = plot_fg, face = "bold") )
+```
+
+The account earning simple interest is a straight line, while the account earning compound interest is curved. We've got one more plot to go - this one shows the present value (or *price*) of \$100 in each account 10 years in the future, under compound interest and simple interest. As before, the interest rate varies from 0% to 10%.
+
+```{r Simple-Interest, echo=FALSE, out.width = "80%", fig.align = "center", message = FALSE}
+x_min <- 0; x_max = 10
+yield <- seq(from = x_min, to = x_max, by = 0.01)
+price_compound <- sapply( yield, function(x) { 100 * (1 + x/100)^-10 } ) 
+price_linear <- sapply( yield, function(x) { 100 / (1 + 10*x/100) } )
+
+Price_Yield <- tibble( "Yield" = yield/100, 
+                       "Compound" = price_compound, 
+                       "Linear" = price_linear )
+
+ggplot() + 
+  geom_line(data = Price_Yield, aes(Yield, Compound, color = plot_fg), 
+            linetype = "solid") +
+  geom_line(data = Price_Yield, aes(Yield, Linear, color = plot_fg_alt), 
+            linetype = "solid") +
+  scale_x_continuous(label = scales::percent) + 
+  scale_y_continuous(label = scales::dollar) +
+  labs(title = "Simple Interest vs. Compound Interest",
+       x = "Interest Rate",
+       y = "Price") +
+  theme_classic() + 
+  theme(plot.title = element_text(hjust = 0.5, face="bold", 
+                                  margin = margin(10, 0, 10, 0),
+                                  colour = plot_fg),
+        text = element_text(size=16), 
+        panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        panel.background = element_rect(fill = plot_bg, color = plot_bg),
+        plot.background = element_rect(fill = plot_bg, color = plot_bg),
+        axis.line = element_line(colour = plot_bg),
+        axis.title.x = element_text(margin = unit(c(4, 0, 0, 0), "mm"), 
+                                    colour = plot_fg, face = "bold"),
+        axis.title.y = element_text(margin = unit(c(0, 4, 0, 0), "mm"), 
+                                    angle = 90, colour = plot_fg, face = "bold") )
+```
+
+## Portfolio Construction 
+
+<!--chapter:end:04-convexity.Rmd-->
+
